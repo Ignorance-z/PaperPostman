@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import time
 from argparse import ArgumentParser
+from typing import Tuple
 
 import feedparser
 import requests
 
 
-
-def get_arxiv_papers(category, start_date, end_date):
+def get_arxiv_papers(category, start_date, end_date) -> Tuple[list, int]:
     base_url = "http://export.arxiv.org/api/query?"
 
     query = f"cat:{category}+AND+submittedDate:[{start_date}+TO+{end_date}]"
@@ -31,7 +31,7 @@ def get_arxiv_papers(category, start_date, end_date):
             }
             papers.append(paper)
 
-        return papers
+        return papers, papers.__len__()
     else:
         print(f"Error: {response.status_code}")
         return None
@@ -41,14 +41,14 @@ if __name__ == "__main__":
     params = ArgumentParser(description='Get arxiv papers')
     params.add_argument('-c', type=str, default="cs.CL", help='arxiv category')
     params.add_argument('-s', type=str, default="20250717", help='start date')
-    params.add_argument('-e', type=str, default="20250720", help='end date')
+    params.add_argument('-e', type=str, default=time.strftime("%Y%m%d", time.localtime()), help='end date')
 
     args = params.parse_args()
     category = args.c
     start_date = args.s
     end_date = args.e
 
-    papers = get_arxiv_papers(category, start_date, end_date)
+    papers, count = get_arxiv_papers(category, start_date, end_date)
     t = time.strftime("%Y%m%d", time.localtime())
 
     with open(f'{category}_papers_{t}.txt', 'w', encoding='utf-8') as f:
@@ -57,3 +57,5 @@ if __name__ == "__main__":
             f.write(f"Authors: {paper['authors']}\n")
             f.write(f"Summary: {paper['summary']}\n")
             f.write(f"Link: {paper['link']}\n\n")
+
+    print(f"Total {count} papers have been saved to {category}_papers_{t}.txt")
