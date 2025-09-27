@@ -1,10 +1,49 @@
 # -*- coding: utf-8 -*-
 import time
 from argparse import ArgumentParser
-from typing import Tuple
+from typing import Tuple, List
+import os
 
 import feedparser
 import requests
+from zai import ZhipuAiClient
+from dotenv import load_dotenv
+import yaml
+
+
+def load_config(yaml_path):
+    """
+    从 YAML 文件加载配置参数。
+    @param yaml_path: YAML 文件路径
+    @return: 配置字典
+    """
+    with open(yaml_path, 'r', encoding='utf-8') as f:
+        config = yaml.safe_load(f)
+    return config
+
+
+def translate(papers: List[dict], config: dict) -> List[str]:
+    client = ZhipuAiClient(api_key=config.get("ZHIPU_API_KEY"))  # 请填写您自己的 API Key
+
+    chinese_summaries = []
+    for paper in papers:
+        text = paper.get("summary")
+        response = client.chat.completions.create(
+            model="glm-4.5",
+            messages=[
+                {"role": "user",
+                 "content": f"你是一名精通英语的人工智能领域的专家，请你仔细思考，将下列英语文本翻译成中文：{text}。"
+                            f"注意，你只需要翻译文本，不需要添加其他的任何信息"},
+            ],
+            thinking={
+                "type": "disabled",  # 启用深度思考模式
+            },
+            temperature=0.6  # 控制输出的随机性
+        )
+        chinese_summaries.append(response.choices[0].message.content)
+        time.sleep(5)
+
+    return chinese_summaries
 
 
 def get_arxiv_papers(category, start_date, end_date) -> Tuple[list, int]:
@@ -34,7 +73,7 @@ def get_arxiv_papers(category, start_date, end_date) -> Tuple[list, int]:
         return papers, papers.__len__()
     else:
         print(f"Error: {response.status_code}")
-        return None
+        return [], 0
 
 
 if __name__ == "__main__":
@@ -48,14 +87,18 @@ if __name__ == "__main__":
     start_date = args.s
     end_date = args.e
 
+    config = load_config("./API_KEY.yaml")
+
     papers, count = get_arxiv_papers(category, start_date, end_date)
     t = time.strftime("%Y%m%d", time.localtime())
 
     with open(f'{category}_papers_{t}.txt', 'w', encoding='utf-8') as f:
-        for idx, paper in enumerate(papers):
+        for idx, (paper, chinese_summary) in enumerate(zip(papers, translate(papers, config))):
             f.write(f"{idx + 1}: {paper['title']}\n")
             f.write(f"Authors: {paper['authors']}\n")
             f.write(f"Summary: {paper['summary']}\n")
-            f.write(f"Link: {paper['link']}\n\n")
+            f.write(f"摘要: {chinese_summary}\n")
+            f.write(f"Link: {paper['link']}\n")
+            f.write(f"Updated: {paper['updated']}\n\n")
 
-    print(f"Total {count} papers have been saved to {category}_papers_{t}.txt")
+    print(f"Total {count} papers have been saved to {category}_papers_{t}")
