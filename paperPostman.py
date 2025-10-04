@@ -94,11 +94,12 @@ if __name__ == "__main__":
     for category in categories:
         papers, count = get_arxiv_papers(category, start_date, end_date)
         with open(f'{category}_papers_{today}.txt', 'w', encoding='utf-8') as f:
-            for idx, (paper, chinese_summary) in enumerate(zip(papers, translate(papers, config))):
+            # for idx, (paper, chinese_summary) in enumerate(zip(papers, translate(papers, config))):
+            for idx, paper in enumerate(papers):
                 f.write(f"{idx + 1}: {paper['title']}\n")
                 f.write(f"Authors: {paper['authors']}\n")
                 f.write(f"Summary: {paper['summary']}\n")
-                f.write(f"摘要: {chinese_summary}\n")
+                # f.write(f"摘要: {chinese_summary}\n")
                 f.write(f"Link: {paper['link']}\n")
                 f.write(f"Updated: {paper['updated']}\n\n")
 
