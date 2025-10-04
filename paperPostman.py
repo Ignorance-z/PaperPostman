@@ -2,12 +2,11 @@
 import time
 from argparse import ArgumentParser
 from typing import Tuple, List
-import os
+from datetime import datetime, timedelta
 
 import feedparser
 import requests
 from zai import ZhipuAiClient
-from dotenv import load_dotenv
 import yaml
 
 
@@ -78,27 +77,29 @@ def get_arxiv_papers(category, start_date, end_date) -> Tuple[list, int]:
 
 if __name__ == "__main__":
     params = ArgumentParser(description='Get arxiv papers')
-    params.add_argument('-c', type=str, default="cs.CL", help='arxiv category')
-    params.add_argument('-s', type=str, default="20250717", help='start date')
-    params.add_argument('-e', type=str, default=time.strftime("%Y%m%d", time.localtime()), help='end date')
+    params.add_argument('-c', type=str, nargs='+', default=["cs.CL", "cs.AI"], help='arxiv categories (支持多个)')
+    params.add_argument('-s', type=str, help='start date (YYYYMMDD)')
+    params.add_argument('-e', type=str, help='end date (YYYYMMDD)')
 
     args = params.parse_args()
-    category = args.c
-    start_date = args.s
-    end_date = args.e
+    categories = args.c
+
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+    today = datetime.now().strftime("%Y%m%d")
+    start_date = args.s if args.s else yesterday
+    end_date = args.e if args.e else today
 
     config = load_config("./API_KEY.yaml")
 
-    papers, count = get_arxiv_papers(category, start_date, end_date)
-    t = time.strftime("%Y%m%d", time.localtime())
+    for category in categories:
+        papers, count = get_arxiv_papers(category, start_date, end_date)
+        with open(f'{category}_papers_{today}.txt', 'w', encoding='utf-8') as f:
+            for idx, (paper, chinese_summary) in enumerate(zip(papers, translate(papers, config))):
+                f.write(f"{idx + 1}: {paper['title']}\n")
+                f.write(f"Authors: {paper['authors']}\n")
+                f.write(f"Summary: {paper['summary']}\n")
+                f.write(f"摘要: {chinese_summary}\n")
+                f.write(f"Link: {paper['link']}\n")
+                f.write(f"Updated: {paper['updated']}\n\n")
 
-    with open(f'{category}_papers_{t}.txt', 'w', encoding='utf-8') as f:
-        for idx, (paper, chinese_summary) in enumerate(zip(papers, translate(papers, config))):
-            f.write(f"{idx + 1}: {paper['title']}\n")
-            f.write(f"Authors: {paper['authors']}\n")
-            f.write(f"Summary: {paper['summary']}\n")
-            f.write(f"摘要: {chinese_summary}\n")
-            f.write(f"Link: {paper['link']}\n")
-            f.write(f"Updated: {paper['updated']}\n\n")
-
-    print(f"Total {count} papers have been saved to {category}_papers_{t}")
+        print(f"Total {count} papers have been saved to {category}_papers_{today}")
