@@ -1,0 +1,54 @@
+name: 'Arxiv Paper Bot'
+
+on:
+  schedule:
+    # 每天 UTC 23:00 运行（北京时间早上 7 点）
+    - cron: '0 23 * * *'
+  workflow_dispatch:   # 手动触发
+
+jobs:
+  arxiv-paper-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install feedparser requests pyyaml python-dotenv zai-sdk
+
+      - name: Run Arxiv Fetch
+        run: |
+          python arxiv_fetch.py -c cs.CL cs.AI
+
+      - name: Convert results to HTML
+        run: |
+          TODAY=$(date +"%Y%m%d")
+          echo "<html><body>" > email.html
+          echo "<h2>Arxiv Papers for $(date +'%Y-%m-%d')</h2>" >> email.html
+          for file in cs.*_papers_${TODAY}.txt; do
+            CATEGORY=$(echo $file | cut -d'_' -f1)
+            echo "<h3>Category: ${CATEGORY}</h3>" >> email.html
+            echo "<pre>" >> email.html
+            cat $file >> email.html
+            echo "</pre><hr>" >> email.html
+          done
+          echo "</body></html>" >> email.html
+
+      - name: Send mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Arxiv Papers for $(date +'%Y-%m-%d')"
+          body: file://email.html
+          to: ${{ secrets.RECEIVER }}
+          from: Arxiv Bot
+          content_type: text/html
