@@ -1,36 +1,48 @@
 # PaperPostman
 
-## 1. 简介
+## 1. Introduction
 
-这是一个用来从arxiv获取指定类别论文集合的小程序，可以通过命令行指定类别、开始日期和结束日期，获得指定日期范围内的论文集合
+This is a small program used to obtain a collection of papers from arxiv in a specified category. It can be run through
+the command line by specifying the category, start date, and end date to get a collection of papers within the specified
+date range.
 
-## 2. 使用方法
+## 2. Usage
 
-### 2.1 安装依赖
+### 2.1 Dependencies
 
-如果使用的是pip安装，则：
-
-```shell
-pip install feedparser
-```
-
-如果使用的是conda安装，则：
+If pip is used for installation:
 
 ```shell
-conda install feedparser
+pip install feedparser requests pyyaml python-dotenv zai-sdk
 ```
 
-### 2.2 使用方法
+If conda is used for installation:
+
+```shell
+conda install feedparser requests pyyaml python-dotenv zai-sdk
+```
+
+### 2.2 Run
 
 ```shell
 python paperPostman.py [-c category] [-s start_date] [-e end_date]
 ```
 
-其中：
+If you want to use the default parameters, you will receive a collection of articles from the previous day on the two
+categories of cs.CL and cs.AI
 
-+ -c表示类别，类别为arxiv官网提供的类别，例如：cs.CV、cs.CL等，默认为cs.CL
-+ -s表示开始日期，日期格式均为"YYYYmmdd"，例如：20250717
-+ -e表示结束日期，日期格式均为"YYYYmmdd"，默认为当天日期
+If you want to customize parameters, you can refer to the following instructions
 
++ `-c` is used to specify the category of the papers, such as: cs.CL, cs.AI, etc. The default is cs.CL. And the program
+  supports collecting articles of multiple categories.
++ `-s` is used to specify the start date, the date format is "YYYYmmdd", the default is the previous day.
++ `-e` is used to specify the end date, the date format is "YYYYmmdd", the default is today.
 
+### 2.3 Translation
 
+The program supports automatic translation of the abstract of the papers. You need to get the API key from
+the [ZhipuAI](https://bigmodel.cn/) website and save it in the `API_KEY.yaml` file in the root directory of the project.
+The API key is saved in the `ZAI_API_KEY` variable.
+
+### 2.4 Email
+You can also use GitHub Action to automatically send the collection of papers to your email if you want.
