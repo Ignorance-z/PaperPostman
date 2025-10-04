@@ -24,7 +24,7 @@ jobs:
 
       - name: Run Arxiv Fetch
         run: |
-          python arxiv_fetch.py -c cs.CL cs.AI
+          python paperPostman.py -c cs.CL cs.AI
 
       - name: Convert results to HTML
         run: |
