@@ -72,6 +72,6 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "Arxiv Papers for $(date +'%Y-%m-%d')"
           body: file://email.html
-          to: ${{ secrets.MAIL_USERNAME }}
+          to: ${{ secrets.RECEIVER }}
           from: ${{ secrets.MAIL_USERNAME }}
           content_type: text/html
