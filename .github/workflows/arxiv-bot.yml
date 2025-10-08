@@ -68,10 +68,11 @@ jobs:
         with:
           server_address: smtp.qq.com
           server_port: 465
+          secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "Arxiv Papers for $(date +'%Y-%m-%d')"
           body: file://email.html
           to: ${{ secrets.RECEIVER }}
-          from: ${{ secrets.MAIL_USERNAME }}
+          from: "Ignorance <${{ secrets.MAIL_USERNAME }}>"
           content_type: text/html
