@@ -26,41 +26,43 @@ jobs:
         run: |
           python paperPostman.py -c cs.CL cs.AI
 
-      - name: Convert results to HTML
+      - name: Convert results to Text
         run: |
           TODAY=$(date +"%Y%m%d")
-          echo "<html><body>" > email.html
-          echo "<h2>Arxiv Papers for $(date +'%Y-%m-%d')</h2>" >> email.html
+          echo "Arxiv Papers for $(date -d 'yesterday' +'%Y-%m-%d')" > email.txt
+          echo "============================================" >> email.txt
           FILES=$(ls cs.*_papers_${TODAY}.txt 2>/dev/null || true)
           if [ -z "$FILES" ]; then
-            echo "No result files found." > no_results.txt
+            echo "No result files found." >> email.txt
           else
             for file in $FILES; do
               if [ -s "$file" ]; then
                 CATEGORY=$(echo $file | cut -d'_' -f1)
-                echo "<h3>Category: ${CATEGORY}</h3>" >> email.html
-                echo "<pre>" >> email.html
-                cat $file >> email.html
-                echo "</pre><hr>" >> email.html
+                echo -e "\nCategory: ${CATEGORY}" >> email.txt
+                echo "--------------------------------------------" >> email.txt
+                cat $file >> email.txt
+                echo -e "\n" >> email.txt
               fi
             done
           fi
-          echo "</body></html>" >> email.html
 
       - name: Check if email content is empty
         id: check_email
         run: |
-          if [ ! -f email.html ] || [ ! -s email.html ]; then
+          if [ ! -f email.txt ] || [ ! -s email.txt ]; then
             echo "empty=true" >> $GITHUB_OUTPUT
           else
-            # 判断正文里是否只有框架（没有论文内容）
-            PAPER_COUNT=$(grep -c "<pre>" email.html || true)
+            PAPER_COUNT=$(grep -c "Category:" email.txt || true)
             if [ "$PAPER_COUNT" -eq 0 ]; then
               echo "empty=true" >> $GITHUB_OUTPUT
             else
               echo "empty=false" >> $GITHUB_OUTPUT
             fi
           fi
+
+      - name: Set email subject
+        id: subject
+        run: echo "subject=Arxiv Papers for $(date -d 'yesterday' +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Send mail
         if: steps.check_email.outputs.empty == 'false'
@@ -71,8 +73,8 @@ jobs:
           secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "Arxiv Papers for $(date +'%Y-%m-%d')"
-          body: file://email.html
+          subject: ${{ steps.subject.outputs.subject }}
+          body: file://email.txt
           to: ${{ secrets.RECEIVER }}
           from: "Ignorance <${{ secrets.MAIL_USERNAME }}>"
-          content_type: text/html
+          content_type: text/plain
