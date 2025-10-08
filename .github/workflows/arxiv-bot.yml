@@ -66,7 +66,7 @@ jobs:
         if: steps.check_email.outputs.empty == 'false'
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.163.com
+          server_address: smtp.qq.com
           server_port: 465
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
