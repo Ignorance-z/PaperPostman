@@ -28,8 +28,8 @@ jobs:
 
       - name: Convert results to Text
         run: |
-          TODAY=$(date +"%Y%m%d")
-          echo "Arxiv Papers for $(date -d 'yesterday' +'%Y-%m-%d')" > email.txt
+          TODAY=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
+          echo "Arxiv Papers for TODAY" > email.txt
           echo "============================================" >> email.txt
           FILES=$(ls cs.*_papers_${TODAY}.txt 2>/dev/null || true)
           if [ -z "$FILES" ]; then
@@ -62,7 +62,7 @@ jobs:
 
       - name: Set email subject
         id: subject
-        run: echo "subject=Arxiv Papers for $(date -d 'yesterday' +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        run: echo "subject=Arxiv Papers for TODAY" >> $GITHUB_OUTPUT
 
       - name: Send mail
         if: steps.check_email.outputs.empty == 'false'
@@ -78,3 +78,6 @@ jobs:
           to: ${{ secrets.RECEIVER }}
           from: "Ignorance <${{ secrets.MAIL_USERNAME }}>"
           content_type: text/plain
+
+      - name: Clean old files
+        run: rm -f cs.*_papers_*.txt
