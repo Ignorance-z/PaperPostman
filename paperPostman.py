@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     for category in categories:
         papers, count = get_arxiv_papers(category, start_date, end_date)
-        with open(f'{category}_papers_{yesterday}.txt', 'w', encoding='utf-8') as f:
+        with open(f'{category}_papers_{start_date}.txt', 'w', encoding='utf-8') as f:
             # for idx, (paper, chinese_summary) in enumerate(zip(papers, translate(papers, config))):
             for idx, paper in enumerate(papers):
                 f.write(f"{idx + 1}: {paper['title']}\n")
@@ -103,4 +103,4 @@ if __name__ == "__main__":
                 f.write(f"Link: {paper['link']}\n")
                 f.write(f"Updated: {paper['updated']}\n\n")
 
-        print(f"Total {count} papers have been saved to {category}_papers_{yesterday}.txt")
+        print(f"Total {count} papers have been saved to {category}_papers_{start_date}.txt")
