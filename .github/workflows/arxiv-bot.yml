@@ -2,8 +2,8 @@ name: 'Arxiv Paper Bot'
 
 on:
   schedule:
-    # 每天 UTC 23:00 运行（北京时间早上 7 点）
-    - cron: '0 23 * * *'
+    # 每天 UTC 24:00 运行（北京时间早上 8 点）
+    - cron: '0 0 * * *'
   workflow_dispatch:   # 手动触发
 
 jobs:
@@ -28,10 +28,11 @@ jobs:
 
       - name: Convert results to Text
         run: |
-          TODAY=$(TZ='Asia/Shanghai' date +'%Y%m%d')
-          echo "Arxiv Papers for TODAY" > email.txt
+          YESTERDAY=$(TZ='Asia/Shanghai' date -d 'yesterday' +'%Y%m%d')
+          echo "YESTERDAY=$YESTERDAY" >> $GITHUB_OUTPUT
+          echo "Arxiv Papers for ${YESTERDAY}" > email.txt
           echo "============================================" >> email.txt
-          FILES=$(ls cs.*_papers_${TODAY}.txt 2>/dev/null || true)
+          FILES=$(ls cs.*_papers_${YESTERDAY}.txt 2>/dev/null || true)
           if [ -z "$FILES" ]; then
             echo "No result files found." >> email.txt
           else
@@ -62,7 +63,7 @@ jobs:
 
       - name: Set email subject
         id: subject
-        run: echo "subject=Arxiv Papers for TODAY" >> $GITHUB_OUTPUT
+        run: echo "subject=Arxiv Papers for ${YESTERDAY}" >> $GITHUB_OUTPUT
 
       - name: Send mail
         if: steps.check_email.outputs.empty == 'false'
