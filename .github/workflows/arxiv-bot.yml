@@ -47,20 +47,6 @@ jobs:
             done
           fi
 
-      - name: Check if email content is empty
-        id: check_email
-        run: |
-          if [ ! -f email.txt ] || [ ! -s email.txt ]; then
-            echo "empty=true" >> $GITHUB_OUTPUT
-          else
-            PAPER_COUNT=$(grep -c "Category:" email.txt || true)
-            if [ "$PAPER_COUNT" -eq 0 ]; then
-              echo "empty=true" >> $GITHUB_OUTPUT
-            else
-              echo "empty=false" >> $GITHUB_OUTPUT
-            fi
-          fi
-
       - name: Set email subject
         id: subject
         run: |
@@ -68,7 +54,6 @@ jobs:
           echo "subject=Arxiv Papers for ${YESTERDAY}" >> $GITHUB_OUTPUT
 
       - name: Send mail
-        if: steps.check_email.outputs.empty == 'false'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.qq.com
