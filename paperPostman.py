@@ -84,8 +84,11 @@ if __name__ == "__main__":
     args = params.parse_args()
     categories = args.c
 
-    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
-    today = datetime.now().strftime("%Y%m%d")
+    # yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+    # today = datetime.now().strftime("%Y%m%d")
+    # 修改获取论文时间，减少因为arxiv未更新导致的获取失败
+    yesterday = (datetime.now() - timedelta(days=2)).strftime("%Y%m%d")
+    today = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
     start_date = args.s if args.s else yesterday
     end_date = args.e if args.e else today
 
