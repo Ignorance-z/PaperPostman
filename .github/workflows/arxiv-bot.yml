@@ -28,7 +28,8 @@ jobs:
 
       - name: Convert results to Text
         run: |
-          YESTERDAY=$(TZ='Asia/Shanghai' date -d 'yesterday' +'%Y%m%d')
+          # YESTERDAY=$(TZ='Asia/Shanghai' date -d 'yesterday' +'%Y%m%d')
+          YESTERDAY=$(TZ='Asia/Shanghai' date -d '2 days ago' +'%Y%m%d')
           echo "YESTERDAY=$YESTERDAY" >> $GITHUB_OUTPUT
           echo "Arxiv Papers for ${YESTERDAY}" > email.txt
           echo "============================================" >> email.txt
@@ -50,7 +51,8 @@ jobs:
       - name: Set email subject
         id: subject
         run: |
-          YESTERDAY=$(TZ='Asia/Shanghai' date -d 'yesterday' +'%Y-%m-%d')
+          # YESTERDAY=$(TZ='Asia/Shanghai' date -d 'yesterday' +'%Y-%m-%d')
+          YESTERDAY=$(TZ='Asia/Shanghai' date -d '2 days ago' +'%Y%m%d')
           echo "subject=Arxiv Papers for ${YESTERDAY}" >> $GITHUB_OUTPUT
 
       - name: Send mail
